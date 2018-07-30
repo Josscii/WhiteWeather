@@ -139,29 +139,40 @@ const LEANCLOUD_APP_ID = "ysUuE04Lk4BW3BHFKx1D0J8m-gzGzoHsz"
 const LEANCLOUD_APP_KEY = "V2ndP6GxVkAiB6MuEYbkht0U"
 
 function getApi(succsed, failed) {
-    $http.get({
-        url: "https://ysuue04l.api.lncld.net/1.1/classes/WhiteWeather",
-        timeout: 10,
-        header: {
-            "X-LC-Id": LEANCLOUD_APP_ID,
-            "X-LC-Key": LEANCLOUD_APP_KEY
-        },
-        handler: function(resp) {
-            var response = resp.response
+    var now = new Date()
+    var lastGetApiDate = $cache.get("lastGetApiDate")
+    var lastApi = $cache.get("lastApi")
+    var dayTime = 24 * 60 * 60 * 1000
 
-            if (response.statusCode == 200) {
-                var data = resp.data
-                var result = data.results.pop()
-                var api = result["api"]
-                if (api.length > 0) {
-                    succsed(api)
-                    return
+    if (lastApi == undefined || (lastApi != undefined && lastGetApiDate != undefined && now.getTime() - lastGetApiDate.getTime() > dayTime)) {
+        $http.get({
+            url: "https://ysuue04l.api.lncld.net/1.1/classes/WhiteWeather",
+            timeout: 10,
+            header: {
+                "X-LC-Id": LEANCLOUD_APP_ID,
+                "X-LC-Key": LEANCLOUD_APP_KEY
+            },
+            handler: function(resp) {
+                var response = resp.response
+    
+                if (response.statusCode == 200) {
+                    var data = resp.data
+                    var result = data.results.pop()
+                    var api = result["api"]
+                    if (api.length > 0) {
+                        $cache.set("lastGetApiDate", now)
+                        $cache.set("lastApi", api)
+                        succsed(api)
+                        return
+                    }
                 }
+    
+                failed()
             }
-
-            failed()
-        }
-    })
+        })
+    } else {
+        succsed(lastApi)
+    }
 }
 
 function updateUI(data) {
