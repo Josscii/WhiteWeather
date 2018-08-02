@@ -177,8 +177,16 @@ function getApi(succsed, failed) {
 
 function updateUI(data) {
     var weather = data["result"]["hourly"]["description"]
-    var first = weather.split("，", 1)[0] + "，"
-    var second = weather.split(first)[1] + "。"
+    console.log(weather)
+    var first = ""
+    var second = ""
+    var arr = weather.split("，", 1)
+    if (arr.length == 1) {
+        first = arr[0] + "。"
+    } else if (arr.length == 2) {
+        first = arr[0] + "，"
+        second = weather.split(first)[1] + "。"
+    }
     setFirstWeatherDesc(first)
     setSecondWeatherDesc(second)
     var temp = data["result"]["realtime"]["temperature"]
@@ -189,11 +197,27 @@ function updateUI(data) {
 }
 
 function setFirstWeatherDesc(desc) {
+    if (desc == undefined) {
+        desc = ""
+    }
     $("l36").text = desc
+    if (desc == "") {
+        $("l32").updateLayout(function(make) {
+            make.top.equalTo($("l36").bottom)
+        })
+    }
 }
 
 function setSecondWeatherDesc(desc) {
+    if (desc == undefined) {
+        desc = ""
+    }
     $("l32").text = desc
+    if (desc == "") {
+        $("l28").updateLayout(function(make) {
+            make.top.equalTo($("l32").bottom)
+        })
+    }
 }
 
 function setTemp(temp) {
