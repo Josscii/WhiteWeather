@@ -20,7 +20,11 @@ $ui.render({
                         textColor: textColor()
                     },
                     layout: function(make, view) {
-                        make.top.equalTo(view.super).offset(50)
+                        var offset = 50
+                        if ($device.isIphoneX) {
+                            offset += 40
+                        }
+                        make.top.equalTo(view.super).offset(offset)
                         make.left.equalTo(view.super).offset(35)
                     }
                 },
