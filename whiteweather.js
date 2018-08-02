@@ -366,7 +366,7 @@ function bgcolor() {
     }
 }
 
-var currentVersion = "1.0.0"
+var currentVersion = "1.0.2"
 
 function replaceAddin() {
     var link = "https://raw.githubusercontent.com/Josscii/WhiteWeather/master/whiteweather.js"
