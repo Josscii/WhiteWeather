@@ -142,9 +142,8 @@ function getApi(succsed, failed) {
     var now = new Date()
     var lastGetApiDate = $cache.get("lastGetApiDate")
     var lastApi = $cache.get("lastApi")
-    var dayTime = 24 * 60 * 60 * 1000
 
-    if (lastApi == undefined || (lastApi != undefined && lastGetApiDate != undefined && now.getTime() - lastGetApiDate.getTime() > dayTime)) {
+    if (lastApi == undefined || (lastApi != undefined && lastGetApiDate != undefined && !sameDay(now, lastGetApiDate))) {
         $http.get({
             url: "https://ysuue04l.api.lncld.net/1.1/classes/WhiteWeather",
             timeout: 10,
@@ -158,7 +157,31 @@ function getApi(succsed, failed) {
                 if (response.statusCode == 200) {
                     var data = resp.data
                     var result = data.results.pop()
-                    var api = result["api"]
+                    var api = result.api
+                    var version = result.version
+                    var updateInfo = result.updateInfo
+                    console.log(result)
+
+                    if (version.localeCompare(currentVersion) == 1) {
+                        $ui.alert({
+                            title: `新版 ${version} 来啦！`,
+                            message: updateInfo,
+                            actions: [
+                                {
+                                    title: "取消",
+                                    handler: function() {
+                                    }
+                                },
+                                {
+                                    title: "更新",
+                                    handler: function() {
+                                        replaceAddin()
+                                    }
+                                }
+                            ]
+                        })
+                    }
+
                     if (api.length > 0) {
                         $cache.set("lastGetApiDate", now)
                         $cache.set("lastApi", api)
@@ -177,22 +200,32 @@ function getApi(succsed, failed) {
 
 function updateUI(data) {
     var weather = data["result"]["hourly"]["description"]
-    console.log(weather)
-    var first = ""
+    var first = weather.split("，", 1)[0]
     var second = ""
-    var arr = weather.split("，", 1)
-    if (arr.length == 1) {
-        first = arr[0] + "。"
-    } else if (arr.length == 2) {
-        first = arr[0] + "，"
-        second = weather.split(first)[1] + "。"
+    if (first.length > 0 && weather.includes("，")) {
+        second = weather.replace(first + "，", "")
     }
+
+    first = first.trim()
+    second = second.trim()
+
+    if (first.length > 0) {
+        if (second.length == 0) {
+            first += "。"
+        } else {
+            first += "，"
+        }
+    }
+
     setFirstWeatherDesc(first)
     setSecondWeatherDesc(second)
+
     var temp = data["result"]["realtime"]["temperature"]
     setTemp(temp)
+
     var aqi = data["result"]["realtime"]["aqi"]
     setAQI(aqi)
+
     setTime()
 }
 
@@ -200,7 +233,9 @@ function setFirstWeatherDesc(desc) {
     if (desc == undefined) {
         desc = ""
     }
+
     $("l36").text = desc
+
     if (desc == "") {
         $("l32").updateLayout(function(make) {
             make.top.equalTo($("l36").bottom)
@@ -212,11 +247,18 @@ function setSecondWeatherDesc(desc) {
     if (desc == undefined) {
         desc = ""
     }
+
+    if (desc.length > 0) {
+        desc += "。"
+    }
+
     $("l32").text = desc
+
     if (desc == "") {
         $("l28").updateLayout(function(make) {
             make.top.equalTo($("l32").bottom)
         })
+        $("l36").font = $font("bold", 32)
     }
 }
 
@@ -319,4 +361,19 @@ function bgcolor() {
     } else {
         return $color("white")
     }
+}
+
+var currentVersion = "1.0.0"
+
+function replaceAddin() {
+    var link = "https://raw.githubusercontent.com/Josscii/WhiteWeather/master/whiteweather.js"
+    var url = `jsbox://install?url=${encodeURIComponent(link)}&name=${encodeURIComponent("白话天气")}&types=${encodeURIComponent(3)}`
+    $app.openURL(url)
+    $app.close()
+}
+
+function sameDay(d1, d2) {
+    return d1.getFullYear() === d2.getFullYear() &&
+      d1.getMonth() === d2.getMonth() &&
+      d1.getDate() === d2.getDate()
 }
