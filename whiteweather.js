@@ -160,7 +160,6 @@ function getApi(succsed, failed) {
                     var api = result.api
                     var version = result.version
                     var updateInfo = result.updateInfo
-                    console.log(result)
 
                     if (version.localeCompare(currentVersion) == 1) {
                         $ui.alert({
