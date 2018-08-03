@@ -96,11 +96,18 @@ $ui.render({
             events: {
                 ready: function(sender) {
                     getWeather()
+                },
+                longPressed: function(sender) {
+                    saveSnapshot()
                 }
             }
         }
     ]
 })
+
+function saveSnapshot(sender) {
+    $share.sheet($("root-view").snapshot)
+}
 
 function getWeather() {
     var cachedData = getCache()
